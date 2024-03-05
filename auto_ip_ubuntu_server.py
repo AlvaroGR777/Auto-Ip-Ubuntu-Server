@@ -2,7 +2,6 @@ import subprocess
 import yaml
 
 def obtener_adaptadores_red():
-    # Analiza el contenido del archivo netplan para obtener los adaptadores de red
     try:
         with open('/etc/netplan/00-installer-config.yaml', 'r') as file:
             netplan_config = yaml.safe_load(file)
@@ -21,7 +20,7 @@ def solicitar_parametros(adaptador):
             print("Dirección IP no válida. Por favor, inténtalo de nuevo.")
 
     while True:
-        mascara = input(f"Introduce la máscara de red para {adaptador} (ejemplo: 255.255.255.0): ")
+        mascara = input(f"Introduce la máscara de red para {adaptador} (ejemplo: 24 para 255.255.255.0): ")
         if validar_mascara(mascara):
             break
         else:
@@ -46,13 +45,11 @@ def validar_ip(ip):
     return True
 
 def validar_mascara(mascara):
-    partes = mascara.split('.')
-    if len(partes) != 4:
+    try:
+        mascara_int = int(mascara)
+        return 0 <= mascara_int <= 32
+    except ValueError:
         return False
-    for parte in partes:
-        if not (int(parte) == 255 or int(parte) == 0):
-            return False
-    return True
 
 def modificar_archivo_netplan(adaptadores_red, parametros_red):
     try:
