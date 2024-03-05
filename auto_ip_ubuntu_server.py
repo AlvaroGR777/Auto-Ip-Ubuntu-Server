@@ -62,7 +62,10 @@ def modificar_archivo_netplan(adaptadores_red, parametros_red):
         for adaptador in adaptadores_red:
             netplan_config['network']['ethernets'][adaptador]['addresses'] = [parametros_red[adaptador]['ip']]
             netplan_config['network']['ethernets'][adaptador]['gateway4'] = parametros_red[adaptador]['gateway']
-            netplan_config['network']['ethernets'][adaptador]['nameservers']['addresses'] = [parametros_red[adaptador]['gateway']]
+
+            # Verificar si el campo 'nameservers' existe antes de modificarlo
+            if 'nameservers' in netplan_config['network']['ethernets'][adaptador]:
+                netplan_config['network']['ethernets'][adaptador]['nameservers']['addresses'] = [parametros_red[adaptador]['gateway']]
 
         with open('/etc/netplan/00-installer-config.yaml', 'w') as file:
             yaml.dump(netplan_config, file, default_flow_style=False)
