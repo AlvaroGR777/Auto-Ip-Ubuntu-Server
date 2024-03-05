@@ -33,7 +33,14 @@ def solicitar_parametros(adaptador):
         else:
             print("Dirección de gateway no válida. Por favor, inténtalo de nuevo.")
 
-    return ip, mascara, gateway
+    while True:
+        dns = input(f"Introduce la dirección del servidor DNS para {adaptador}: ")
+        if validar_ip(dns):
+            break
+        else:
+            print("Dirección de DNS no válida. Por favor, inténtalo de nuevo.")
+
+    return ip, mascara, gateway, dns
 
 def validar_ip(ip):
     partes = ip.split('.')
@@ -59,7 +66,7 @@ def modificar_archivo_netplan(adaptadores_red, parametros_red):
         for adaptador in adaptadores_red:
             netplan_config['network']['ethernets'][adaptador]['addresses'] = [f"{parametros_red[adaptador]['ip']}/{parametros_red[adaptador]['mascara']}"]
             netplan_config['network']['ethernets'][adaptador]['routes'] = [{'to': 'default', 'via': parametros_red[adaptador]['gateway']}]
-            netplan_config['network']['ethernets'][adaptador]['nameservers'] = {'addresses': [parametros_red[adaptador]['gateway']]}
+            netplan_config['network']['ethernets'][adaptador]['nameservers'] = {'addresses': [parametros_red[adaptador]['dns']]}
             
         with open('/etc/netplan/00-installer-config.yaml', 'w') as file:
             yaml.dump(netplan_config, file, default_flow_style=False)
@@ -81,6 +88,6 @@ if __name__ == "__main__":
         parametros_red = {}
         for adaptador in adaptadores_red:
             parametros_red[adaptador] = {}
-            parametros_red[adaptador]['ip'], parametros_red[adaptador]['mascara'], parametros_red[adaptador]['gateway'] = solicitar_parametros(adaptador)
+            parametros_red[adaptador]['ip'], parametros_red[adaptador]['mascara'], parametros_red[adaptador]['gateway'], parametros_red[adaptador]['dns'] = solicitar_parametros(adaptador)
         modificar_archivo_netplan(adaptadores_red, parametros_red)
         aplicar_cambios_red()
